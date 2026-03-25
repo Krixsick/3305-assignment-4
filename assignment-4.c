@@ -130,32 +130,39 @@ int main(int argc, char *argv[]) {
             if (active_pid == -1 || processes[active_pid].is_completed || current_quantum_time == time_quantum) {
                 algor_switch = true;
             }
+            //If nothing is running we look at the top of the list, if something is running we look at the process immediately 
             if (algor_switch) {
                 int start_check = (active_pid == -1) ? 0 : (active_pid + 1) % num_processes;
                 int next_pid = -1;
                 for (int num = 0; num < num_processes; num++) {
                     int check_pid = (start_check + num) % num_processes;
+                    //We check if it arrived already and if it did we precede with the next pid
                     if (processes[check_pid].arrival_time <= current_tick && !processes[check_pid].is_completed) {
                         next_pid = check_pid;
                         break;
                     }
                 }
+                
                 if (next_pid != -1) {
+                    //Check if the next_pid is eqial to -1
                     active_pid = next_pid;
                     current_quantum_time = 0; 
                 } else if (active_pid != -1 && !processes[active_pid].is_completed) {
+                    //reset current quantum time
                     current_quantum_time = 0;
                 }
             }
         }
+        //
 
         if (active_pid != -1) {
-            
+            //Print out the burst left, wait time and turnaround time
             printf("T%-4d: P%-4d - Burst left %4d, Wait time %4d, Turnaround time %4d\n", 
                    current_tick, active_pid, 
                    processes[active_pid].remaining_burst_time, 
                    processes[active_pid].wait_time, 
                    processes[active_pid].turnaround_time);
+            //At every tick we make some updates on all processes
             for (int num = 0; num < num_processes; num++) {
                 if (processes[num].arrival_time <= current_tick && !processes[num].is_completed) {
                     processes[num].turnaround_time++;
@@ -174,13 +181,16 @@ int main(int argc, char *argv[]) {
         }
         current_tick++;
     }
+    //Loops through num_processes 
     for (int num = 0; num < num_processes; num++) {
+        //Prints out the nums
         printf("P%d\n", num);
         printf("Waiting time: %d\n", processes[num].wait_time);
         printf("Turnaround time:%d\n", processes[num].turnaround_time);
         total_wait += processes[num].wait_time;
         total_turnaround += processes[num].turnaround_time;
     }
+    //Prints out the average waiting time
     printf("Total average waiting time:     %.4f\n", total_wait / num_processes);
     printf("Total average turnaround time:  %.4f\n", total_turnaround / num_processes);
     return 0;
